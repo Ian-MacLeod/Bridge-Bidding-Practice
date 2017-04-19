@@ -20,7 +20,7 @@ app.get('/db', function(req, res){
         res.send("error " + err);
       } else{
         res.setHeader('Content-Type', 'application/json');
-        res.send({results.rows});
+        res.send({result.rows});
       }
     });
   });
