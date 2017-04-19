@@ -1,0 +1,9 @@
+{
+  "name": "bidding-practice",
+  "version": "0.0.1",
+  "description": "Bridge bidding practice tool",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^1.7.3"
+  }
+}
