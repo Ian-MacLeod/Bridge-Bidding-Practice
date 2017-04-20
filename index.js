@@ -5,8 +5,8 @@ const path = require('path')
 const pg = require('pg')
 
 const PORT = process.env.PORT || 3000;
-const INDEX = path.join(__dirname, 'index.html')
 const DB_URL = process.env.DATABASE_URL || process.env.LOCAL_DATABASE_URL
+const INDEX = path.join(__dirname, 'index.html')
 
 app.get('/', function(req, res){
   res.sendFile(INDEX);
