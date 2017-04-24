@@ -33,6 +33,13 @@ http.listen(PORT, function(){
 
 io.on('connection', function(socket){
   socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
+    io.to(msg.roomName).emit('chat message', msg.message);
+  });
+  socket.on('enter room', function(roomList){
+    socket.leave(roomList.leave);
+    socket.join(roomList.enter);
+  });
+  socket.on('leave room', function(roomName){
+    socket.leave(roomName);
   });
 });

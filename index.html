@@ -6,6 +6,7 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
       form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form.select-room {bottom:150px};
       form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
       form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
       #messages { list-style-type: none; margin: 0; padding: 0; }
@@ -14,18 +15,39 @@
     </style>
   </head>
   <body>
+    <button id="leaveRoom">Leave Room</button>
+    <div id="roomName">In room: </div>
     <ul id="messages"></ul>
-    <form action="">
+    <form class="chat" action="">
       <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <form class="select-room" action="">
+      <input id="n" autocomplete="off" /><button>Select room</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
         var socket = io();
-        $('form').submit(function(){
-          socket.emit('chat message', $('#m').val());
+        var roomName = '';
+        $('#leaveRoom').click(function(){
+          socket.emit('leave room', roomName);
+          $("div#roomName").text('In room: ');
+          roomName = '';
+        });
+        $('form.chat').submit(function(){
+          socket.emit('chat message', {'message': $('#m').val(), 'roomName': roomName});
           $('#m').val('');
+          return false;
+        });
+        $('form.select-room').submit(function(){
+          socket.emit('enter room', {'enter': $('#n').val(),
+                                     'leave': roomName});
+          roomName = $('#n').val();
+          $("div#roomName").text('In room: ' + roomName);
+          //document.getElementById("roomName").innerHTML = roomName;
+
+          $('#n').val('');
           return false;
         });
         socket.on('chat message', function(msg){
