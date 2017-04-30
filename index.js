@@ -7,11 +7,6 @@ const pg = require('pg')
 
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DATABASE_URL || process.env.LOCAL_DATABASE_URL
-const INDEX = path.join(__dirname, 'client/build/index.html')
-
-//app.get('/', function(req, res){
-//  res.sendFile(INDEX);
-//});
 
 app.get('/db', function(req, res){
   pg.connect(DB_URL, function(err, client, done){
