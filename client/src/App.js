@@ -12,7 +12,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    socket.on('join room', function(name){
+    socket.on('enter room', name => {
+      console.log(this);
       this.setState({roomName: name});
       console.log(name);
     });
@@ -25,12 +26,15 @@ class App extends Component {
 
   render() {
     let room = '';
+    let roomList = '';
     if (this.state.roomName !== null) {
-      room = <Room RoomName={this.state.roomName} backToRoomList={this.backToRoomList}/>;
+      room = <Room roomName={this.state.roomName} backToRoomList={this.backToRoomList}/>;
+    } else {
+      roomList = <RoomList RoomNames={["hello", "room 2", "Matt's Room"]} />;
     }
     return (
       <div>
-        <RoomList RoomNames={["hello", "room 2", "Matt's Room"]} />
+        {roomList}
         {room}
       </div>
     );
@@ -56,9 +60,50 @@ class RoomList extends Component {
 }
 
 class Room extends Component {
+  constructor() {
+    super();
+    this.state = {chatLog: ["hello"],
+                  chatInput: ""};
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({chatInput: event.target.value});
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    socket.emit('chat message', {roomName: this.props.roomName, message: this.state.chatInput});
+    this.setState({chatInput: ""});
+  }
+
+  componentDidMount() {
+    socket.on('chat message', message => {
+      this.setState({chatLog: this.state.chatLog.concat([message])});
+    });
+  }
+
   render() {
+    let messageItems = this.state.chatLog.map((message, index) => {
+      return (<div key={index}>{message}</div>)
+    });
+    //let messageItems = this.state.chatLog.map((message) => {
+    //  <div>hello</div>
+    //});
+    console.log(messageItems);
     return (
-      <button onClick={this.props.backToRoomList}>Back to Room List</button>
+      <div>
+        <h1>Room: {this.props.roomName}</h1>
+        <button onClick={this.props.backToRoomList}>Back to Room List</button>
+        <div>
+          {messageItems}
+        </div>
+        <form onSubmit={this.handleSubmit}>
+          <input type="text" value={this.state.chatInput} onChange={this.handleChange} />
+          <input type="submit" value="Submit Message" />
+        </form>
+      </div>
     )
   }
 }
