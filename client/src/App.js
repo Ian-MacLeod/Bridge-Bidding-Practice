@@ -4,19 +4,48 @@ import './App.css';
 
 const socket = require('socket.io-client')();
 
+/*
+Note: we just finished creating custom rooms and updating the list for 1 user
+
+1.) When a new room created, update list for all users
+2.) Create login page
+3.) Create user tables
+4.) Make rooms only have 2 person capacity
+5.) Make rooms automatically disappear when no one is in them
+6.) Figure out passwords
+7.) Figure out a better way to do the 10 milisec delay on roomList update
+8.) Figure out why the get room list emit is failing sometimes
+
+1.) Create card objects
+2.) Deal out a shit
+3.) Enable bidding
+4.) Stand up/sit down at table
+5.) Chat box shows who typing da thing
+6.) Button for new hand
+7.) Handle when two people pass
+*/
+
 class App extends Component {
   constructor() {
     super();
-    this.state = {roomName: null};
+    this.state = {roomName: null, roomList: []};
     this.backToRoomList = this.backToRoomList.bind(this);
   }
 
   componentDidMount() {
     socket.on('enter room', name => {
-      console.log(this);
       this.setState({roomName: name});
-      console.log(name);
     });
+    socket.on('room list', roomList => {
+      this.setState({roomList: roomList});
+      console.log(roomList);
+    });
+    socket.emit('get room list');
+    socket.emit('get room list');/*
+    setTimeout(function(){
+      socket.emit('get room list')
+    }, 100);*/
+
   }
 
   backToRoomList() {
@@ -30,7 +59,7 @@ class App extends Component {
     if (this.state.roomName !== null) {
       room = <Room roomName={this.state.roomName} backToRoomList={this.backToRoomList}/>;
     } else {
-      roomList = <RoomList RoomNames={["hello", "room 2", "Matt's Room"]} />;
+      roomList = <RoomList RoomNames={this.state.roomList} />;
     }
     return (
       <div>
@@ -42,10 +71,26 @@ class App extends Component {
 }
 
 class RoomList extends Component {
+  constructor() {
+    super();
+    this.state = {roomNameInput: ""};
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
   handleClick(name) {
     return (
       function() {socket.emit('enter room', name)
     });
+  }
+
+  handleChange(event) {
+    this.setState({roomNameInput: event.target.value});
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    socket.emit('create room', this.state.roomNameInput);
+    this.setState({roomNameInput: ""});
   }
 
   render() {
@@ -54,7 +99,13 @@ class RoomList extends Component {
     <li key={name} onClick={this.handleClick(name)}>{name}</li>
     );
     return (
-      <ul>{ListItems}</ul>
+      <div>
+        <ul>{ListItems}</ul>
+        <form onSubmit={this.handleSubmit}>
+          <input type="text" value={this.state.roomNameInput} onChange={this.handleChange} />
+          <input type="submit" value="Create New Room" />
+        </form>
+      </div>
     );
   }
 }
