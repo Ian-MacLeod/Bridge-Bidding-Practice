@@ -4,6 +4,8 @@ import './App.css';
 
 const socket = require('socket.io-client')();
 
+// commit the crazy branch we made before reverting and doing productive things
+
 /*
 Note: we just finished creating custom rooms and updating the list for 1 user
 
@@ -17,7 +19,7 @@ Note: we just finished creating custom rooms and updating the list for 1 user
 8.) Figure out why the get room list emit is failing sometimes
 
 1.) Create card objects
-2.) Deal out a shit
+2.) Deal out a hand
 3.) Enable bidding
 4.) Stand up/sit down at table
 5.) Chat box shows who typing da thing
@@ -28,7 +30,9 @@ Note: we just finished creating custom rooms and updating the list for 1 user
 class App extends Component {
   constructor() {
     super();
-    this.state = {roomName: null, roomList: []};
+    this.state = {roomName: null,
+                  roomList: [],
+                  userName: null};
     this.backToRoomList = this.backToRoomList.bind(this);
   }
 
@@ -56,15 +60,64 @@ class App extends Component {
   render() {
     let room = '';
     let roomList = '';
-    if (this.state.roomName !== null) {
+    let login = '';
+    if (this.state.userName === null) {
+      login = <LoginPage />;
+    } else if (this.state.roomName !== null) {
       room = <Room roomName={this.state.roomName} backToRoomList={this.backToRoomList}/>;
     } else {
       roomList = <RoomList RoomNames={this.state.roomList} />;
     }
     return (
       <div>
+        {login}
         {roomList}
         {room}
+      </div>
+    );
+  }
+}
+
+class LoginPage extends Component {
+  constructor() {
+    super();
+    this.state = {usernameInput: "", passwordInput: ""};
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleUsernameChange = this.handleUsernameChange.bind(this);
+    this.handlePasswordChange = this.handlePasswordChange.bind(this);
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    socket.emit('test', {username: this.state.usernameInput, password: this.state.passwordInput});
+    this.setState({usernameInput: ""});
+    this.setState({passwordInput: ""});
+  }
+
+  handleUsernameChange(event) {
+    this.setState({usernameInput: event.target.value});
+  }
+
+  handlePasswordChange(event) {
+    this.setState({passwordInput: event.target.value});
+  }
+//onSubmit={this.handleSubmit}>
+  render() {
+    return (
+      <div>
+        <form action="/login" method="post">
+          <div>
+            <label>Username:</label>
+            <input name="username" type="text" value={this.state.usernameInput} onChange={this.handleUsernameChange}/>
+          </div>
+          <div>
+            <label>Password:</label>
+          </div>
+          <input name="password" type="password" value={this.state.passwordInput} onChange={this.handlePasswordChange}/>
+          <div>
+            <input type="submit" value="Log In"/>
+          </div>
+        </form>
       </div>
     );
   }
